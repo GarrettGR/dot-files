@@ -1,7 +1,3 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
 { config, pkgs, ... }:
 
 {
@@ -21,30 +17,36 @@
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
     };
-    kernelParams = [ "nvidia.NVreg_PreserveVideoMemoryAllocations=1" ];
+    kernelPackages = pkgs.linuxPackages_latest;
   };
 
   # -----
-  
+
   # Hardware
   hardware = {
     pulseaudio.enable = false;
     bluetooth.enable = true;
-    nvidia.open = false;
-    nvidia.powerManagement.enable = true;
+    sensor.iio.enable = true;
+    opengl = { # use 'common-cpu-intel' module in the future?
+      enable = true;
+      extraPackages = with pkgs; [
+        intel-media-driver
+	      vaapiIntel
+	      vaapiVdpau
+	      libvdpau-va-gl
+      ];
+    };
   };
 
-
-  # ------
+  # -----
 
   # Services
   services = {
     xserver = {
       enable = true;
       libinput.enable = true;
-      # videoDrivers = [ "nvidia" ];
       displayManager.sddm.wayland.enable = true;
-      desktopManager.plasma6.enable = true;
+      # desktopManager.plasma6.enable = true;
       xkb = {
         layout = "us";
         variant = "";
@@ -56,15 +58,20 @@
       alsa.support32Bit = true;
       pulse.enable = true;
     };
+    desktopManager.plasma6.enable = true;
     printing.enable = true;
     openssh.enable = true;
+    hardware.bolt.enable = true;
+    tailscale.enable = true;
   };
 
 
   # -----
 
   # Packages
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs = {
+    config.allowUnfree = true;
+  };
 
   # User Packages
   users.users = {
@@ -72,14 +79,15 @@
       isNormalUser = true;
       shell = pkgs.zsh;
       description = "Garrett Gonzalez-Rivas";
-      extraGroups = [ "networkmanager" "wheel" ];
+      extraGroups = [ "networkmanager" "wheel" "docker" ];
       packages = with pkgs; [
         firefox-wayland
         kate
         speedread
         spotify
-        zotero
-        zoom-us
+        zotero_7
+	      zoom-us
+	      zed-editor
         slack
         obsidian
         onedrive
@@ -87,6 +95,7 @@
         discord
         bootstrap-studio
         bitwarden
+        logseq
       ];
     };
   };
@@ -101,8 +110,10 @@
     starship
     tmux
     w3m
+    sqlcmd # Only for IS331
     openconnect
     lsd
+    asusctl
     lshw
     neofetch
     git
@@ -111,32 +122,14 @@
     mtr
     alacritty
     tldr
-    ranger
     bottom
     nmap
-    docker
-    bitwarden
     speedtest-cli
     # wine
-    tailscale
     home-manager
-    # hyprland
-    # waybar
+    waybar
   ];
 
-
-  # -----
-
-  # Home Manager
-  
-#  home-manager.users.garrettgr = { pkgs, ...}: {
-#    home.packages = [ 
-#      
-#    ];
-#    programs.zsh.enable = true;
-#
-#    home.stateVersion = "23.11";
-#  };
 
   # -----
 
@@ -145,7 +138,6 @@
     zsh.enable = true;
     hyprland.enable = true;
   };
-
 
   # -----
 
@@ -164,14 +156,23 @@
     # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
   };
 
-
   # -----
 
   # Miscellaneous
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  # virtualisation.vmware.host.enable = true;
-  virtualisation.libvirtd.enable = true;
+  virtualisation = {
+    # vmware.host.enable = true;
+    libvirtd.enable = true;
+    docker = {
+      enable = true;
+      rootless = {
+          enable = true;
+          setSocketVariable = true;
+        };
+    };
+  };
+
   programs.virt-manager.enable = true;
 
   time.timeZone = "America/New_York"; # Set your time zone.
