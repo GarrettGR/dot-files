@@ -6,7 +6,7 @@
   home.homeDirectory = "/home/garrettgr";
 
   nixpkgs.config.allowUnfree = true;
-  home.stateVersion = "23.11";
+  home.stateVersion = "24.05";
 
   home.packages = [
 
@@ -14,41 +14,30 @@
     pkgs.monaspace
     pkgs.onlyoffice-bin
     pkgs.bat
+    pkgs.eza
     pkgs.navi
     pkgs.steam
     # pkgs.btop
     pkgs.jdk21
+    pkgs.libgcc
+    pkgs.zig
+    pkgs.xclip
     # pkgs.jdk11
     pkgs.nyxt
     pkgs.wireshark
     pkgs.neovim
+    pkgs.fastfetch
     pkgs.vimPlugins.LazyVim
-    pkgs.kdePackages.kmail    
+    pkgs.kdePackages.kmail
   ];
 
-  # Home Manager is pretty good at managing dotfiles. The primary way to manage
-  # plain files is through 'home.file'.
+  # Home Manager is pretty good at managing dotfiles. The primary way to manage plain files is through 'home.file'.
   home.file = {
   };
 
-  # Home Manager can also manage your environment variables through
-  # 'home.sessionVariables'. If you don't want to manage your shell through Home
-  # Manager then you have to manually source 'hm-session-vars.sh' located at
-  # either
-  #
-  #  ~/.nix-profile/etc/profile.d/hm-session-vars.sh
-  #
-  # or
-  #
-  #  ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
-  #
-  # or
-  #
-  #  /etc/profiles/per-user/garrettgr/etc/profile.d/hm-session-vars.sh
-
   home.sessionVariables = {
 
-    EDITOR = "vim";
+    EDITOR = "nvim";
 
   };
 
@@ -58,63 +47,82 @@
     userEmail = "emailforggr@gmail.com";
   };
 
-  programs.vscode = {
-    enable=true;
-    package=pkgs.vscode.fhs;
-  };
+  # programs.vscode = {
+  #   enable=true;
+  #   package=pkgs.vscode.fhs;
+  # };
 
   programs.zsh = {
     enable = true;
-    enableAutosuggestions = true;
+    autosuggestion.enable = true;
     enableCompletion = true;
-    syntaxHighlighting.enable=true;
+    syntaxHighlighting.enable = true;
 
     history = {
       size = 10000;
       share = true;
       # path =  "${config.xdg.dataHome}/zsh/history";
     };
-    
+
     shellAliases = {
       c = "clear";
       l = "command ls -l";
-      ls = "lsd";
-      ll = "ls -l";
-      la = "ls -a";
-      lt = "lsd --tree";
+      ls = "eza $eza_params";
+      ll = "eza --all --header --long $eza_params";
+      la = "eza --all $eza_params";
+      lt = "eza --icons --tree --color-scale --git --level=3";
+      lr = "eza --recurse --level=2 $eza_params";
       cat = "bat";
+      ccat = "command cat";
       top = "btop";
       rl = "exec zsh";
-      # grep = "rg";
       update = "sudo nixos-rebuild switch";
+      upgrade = "sudo nixos-rebuild switch --upgrade";
       update-home = "home-manager switch";
     };
 
     localVariables = {
-      # ZOXIDE_CMD_OVERRIDE="cd";
+      eza_params = [
+        "--git"
+        "--icons"
+        "--classify"
+        "--group-directories-first"
+        "--time-style=long-iso"
+        "--group"
+        "--color-scale"
+      ];
     };
 
-    initExtra = ''      
-      eval "$(zoxide init --cmd cd zsh)"
+    initExtra = ''
       eval "$(atuin init zsh)"
     '';
 
     oh-my-zsh = {
       enable = true;
-      # theme = "robbyrussell";
+
+      extraConfig = ''
+        ZOXIDE_CMD_OVERRIDE="cd"
+      '';
+
       plugins = [
         "git"
-	"copyfile"
-        "web-search"
+        "copyclip"
+        # "web-search"
         "fzf"
-        # "eza"
+        "eza"
         "ripgrep"
         "starship"
         # "thefuck"
-        # "zoxide"
+        "zoxide"
       ];
     };
+  };
 
+  dconf.settings = {
+    "org/virt-manager/virt-manager/connections" = {
+      autoconnect = ["qemu:///system"];
+      uris = ["qemu:///system"];
+    };
   };
 
   programs.home-manager.enable = true;
