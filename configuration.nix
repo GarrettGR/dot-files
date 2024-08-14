@@ -27,13 +27,13 @@
     pulseaudio.enable = false;
     bluetooth.enable = true;
     sensor.iio.enable = true;
-    opengl = { # use 'common-cpu-intel' module in the future?
+    graphics = { # use 'common-cpu-intel' module in the future?
       enable = true;
       extraPackages = with pkgs; [
         intel-media-driver
-	      vaapiIntel
-	      vaapiVdpau
-	      libvdpau-va-gl
+	vaapiIntel
+	vaapiVdpau
+	libvdpau-va-gl
       ];
     };
   };
@@ -44,9 +44,6 @@
   services = {
     xserver = {
       enable = true;
-      libinput.enable = true;
-      displayManager.sddm.wayland.enable = true;
-      # desktopManager.plasma6.enable = true;
       xkb = {
         layout = "us";
         variant = "";
@@ -59,8 +56,10 @@
       pulse.enable = true;
     };
     desktopManager.plasma6.enable = true;
+    displayManager.sddm.wayland.enable = true;
     printing.enable = true;
     openssh.enable = true;
+    libinput.enable = true;
     hardware.bolt.enable = true;
     tailscale.enable = true;
   };
@@ -70,7 +69,12 @@
 
   # Packages
   nixpkgs = {
-    config.allowUnfree = true;
+    config = {
+      allowUnfree = true;
+      permittedInsecurePackages = [
+        "electron-27.3.11"
+      ];
+    };
   };
 
   # User Packages
@@ -79,15 +83,15 @@
       isNormalUser = true;
       shell = pkgs.zsh;
       description = "Garrett Gonzalez-Rivas";
-      extraGroups = [ "networkmanager" "wheel" "docker" ];
+      extraGroups = [ "networkmanager" "wheel" "libvirtd" "docker" ];
       packages = with pkgs; [
         firefox-wayland
         kate
         speedread
         spotify
         zotero_7
-	      zoom-us
-	      zed-editor
+        zoom-us
+        zed-editor
         slack
         obsidian
         onedrive
@@ -106,10 +110,14 @@
     wget
     zoxide
     ranger
+    xclip
     atuin
+    libgcc
+    networkmanager-openconnect
     starship
     tmux
     w3m
+    anydesk
     sqlcmd # Only for IS331
     openconnect
     lsd
@@ -137,6 +145,7 @@
   programs = {
     zsh.enable = true;
     hyprland.enable = true;
+    virt-manager.enable = true;
   };
 
   # -----
@@ -144,7 +153,7 @@
   #Networking
   networking = {
     hostName = "nixos";
-    wireless.enable = false;
+    # wireless.enable = false;
     networkmanager.enable = true;
     firewall = {
       enable = true;
@@ -173,8 +182,6 @@
     };
   };
 
-  programs.virt-manager.enable = true;
-
   time.timeZone = "America/New_York"; # Set your time zone.
 
   i18n.defaultLocale = "en_US.UTF-8"; # Select internationalisation properties.
@@ -191,9 +198,8 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  sound.enable = true;
   security.rtkit.enable = true;
 
-  system.stateVersion = "23.11";
+  system.stateVersion = "24.05";
 
 }
